@@ -1,6 +1,5 @@
 <?php 
 include 'connect.php';
-$res = array();
 $action = '';
 
 if (isset($_GET['action'])) {
@@ -23,4 +22,3 @@ if ($action == 'GetAllProducts'){
 };
 $connect -> close();
 die;
-?>

@@ -3,14 +3,32 @@ import { createStore } from 'vuex'
 import VuexPersistence from 'vuex-persist'
 const vuexLocal = new VuexPersistence({
   storage: window.localStorage,
+  reducer: (state) => ({
+    Favourites: state.Favourites,
+    User: state.User
+  })
 })
-
 const API = 'http://flor/src/api/'
+
+
+
 
 export default createStore({
   state: {
     AllProducts: [],
-    Favourites: []
+    Favourites: [],
+    User: {
+      name: '',
+      lastname: '',
+      email: '',
+      phone: '',
+      birthday: '',
+      city: '',
+      street: '',
+      home: '',
+      bonuses: 0,
+      IsUserExist: false
+    }
   },
   getters: {
     ALLPRODUCTS(state){
@@ -18,6 +36,9 @@ export default createStore({
     },
     FAVOURITES(state){
       return state.Favourites
+    },
+    USER(state){
+      return state.User
     }
   },
   mutations: {
@@ -39,8 +60,14 @@ export default createStore({
         state.Favourites.push(FavouritesItem)
       }
     }, 
-    REMOVE_PRODUCT_FROM_FVOURITES: (state, FavouritesItemId) => {
+    REMOVE_PRODUCT_FROM_FAVOURITES: (state, FavouritesItemId) => {
       state.Favourites = state.Favourites.filter((item) => item.id !== FavouritesItemId)
+    },
+    SET_USER_TO_PROFILE: (state, RegistrationData) => {
+      let RegistrationDataJson = Object.fromEntries(RegistrationData)
+      state.User.email = RegistrationDataJson['email']
+      state.User.phone = RegistrationDataJson['phone']
+      state.User.IsUserExist = true
     }
   },
   actions: {
@@ -60,7 +87,23 @@ export default createStore({
       commit('SET_PRODUCT_TO_FAVOURITES', FavouritesItem)
     },
     DELETE_FROM_FAVOURITES({commit}, FavouritesItemId){
-      commit('REMOVE_PRODUCT_FROM_FVOURITES', FavouritesItemId)
+      commit('REMOVE_PRODUCT_FROM_FAVOURITES', FavouritesItemId)
+    },
+    REGISTRATION({commit}, RegistrationData){
+      try {
+        axios
+        .post(API + 'registration.php', RegistrationData)
+        .then(() => {
+          commit('SET_USER_TO_PROFILE', RegistrationData)
+        })
+        .catch((err) => {
+          console.log("Ошибка при отправке данных пользователя" + err)
+          return err;
+        })
+      } catch(err){
+        console.log("Ошибка при отправке данных пользователя")
+        return err;
+      }
     }
     
   },
