@@ -45,8 +45,8 @@ export default {
     },
     methods: {
         OpenProfile() {
-            if (this.USER.IsUserExist) {
-                this.$router.push('profile');
+            if (this.USER.HashId) {
+                this.$router.push('/profile/personal');
             }
             else {
                 this.IsModalOpen = true

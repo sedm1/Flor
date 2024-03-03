@@ -114,7 +114,8 @@ export default {
     },
     methods: {
         ...mapActions([
-            'REGISTRATION'
+            'REGISTRATION',
+            'AUTORISATION'
         ]),
         CloseModal(){
             this.$emit('CloseModal')
@@ -128,10 +129,12 @@ export default {
             formData.append('phone', this.RegistrationData.phone)
             formData.append('pass', this.RegistrationData.pass)
             this.REGISTRATION(formData)
-            this.$router.push('/profile')
         },
         Login(){
-
+            let formData = new FormData();
+            formData.append('email', this.LoginData.email)
+            formData.append('pass', this.LoginData.pass)
+            this.AUTORISATION(formData)
         }
     },
     computed: {

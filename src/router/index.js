@@ -9,7 +9,21 @@ const routes = [
   {
     path: '/profile',
     name: 'profile',
-    component: () => import('../views/Profile.vue')
+    component: () => import('../views/Profile.vue'),
+    children: [
+      {
+        path: 'personal',
+        component: () => import('../views/profile/ProfileData.vue')
+      },
+      {
+        path: 'orders',
+        component: () => import('../views/profile/ProfileOrders')
+      },
+      {
+        path: 'favourites',
+        component: () => import('../views/profile/ProfileFavourites.vue')
+      }
+    ]
   }
 ]
 

@@ -1,7 +1,12 @@
 import axios from 'axios'
 import { createStore } from 'vuex'
 import VuexPersistence from 'vuex-persist'
-const vuexLocal = new VuexPersistence({
+import { useToast } from 'vue-toastification'
+
+
+
+const toast = useToast()
+const Local = new VuexPersistence({
   storage: window.localStorage,
   reducer: (state) => ({
     Favourites: state.Favourites,
@@ -18,16 +23,7 @@ export default createStore({
     AllProducts: [],
     Favourites: [],
     User: {
-      name: '',
-      lastname: '',
-      email: '',
-      phone: '',
-      birthday: '',
-      city: '',
-      street: '',
-      home: '',
-      bonuses: 0,
-      IsUserExist: false
+      HashId: '',
     }
   },
   getters: {
@@ -63,11 +59,9 @@ export default createStore({
     REMOVE_PRODUCT_FROM_FAVOURITES: (state, FavouritesItemId) => {
       state.Favourites = state.Favourites.filter((item) => item.id !== FavouritesItemId)
     },
-    SET_USER_TO_PROFILE: (state, RegistrationData) => {
-      let RegistrationDataJson = Object.fromEntries(RegistrationData)
-      state.User.email = RegistrationDataJson['email']
-      state.User.phone = RegistrationDataJson['phone']
-      state.User.IsUserExist = true
+    SET_USER_TO_PROFILE: (state, UserId) => {
+      state.User.HashId = UserId
+      
     }
   },
   actions: {
@@ -89,23 +83,87 @@ export default createStore({
     DELETE_FROM_FAVOURITES({commit}, FavouritesItemId){
       commit('REMOVE_PRODUCT_FROM_FAVOURITES', FavouritesItemId)
     },
+
+    //USER
     REGISTRATION({commit}, RegistrationData){
       try {
         axios
         .post(API + 'registration.php', RegistrationData)
-        .then(() => {
-          commit('SET_USER_TO_PROFILE', RegistrationData)
+        .then((res) => {
+          if (res.data.status == 'User Exist - email'){
+            toast.error("Пользователь с такой почтой уже существует", {
+              timeout: 3000,
+              closeOnClick: true,
+              draggable: true,
+              draggablePercent: 2,
+              hideProgressBar: true,
+            });
+          } else if(res.data.status == 'User Exist - phone'){
+            toast.error("Пользователь с таким телефоном уже существует", {
+              timeout: 3000,
+              closeOnClick: true,
+              draggable: true,
+              draggablePercent: 2,
+              hideProgressBar: true,
+            });
+          } else {
+            commit('SET_USER_TO_PROFILE', res.data.id)
+            toast.success("Регистрация успешена!", {
+              timeout: 3000,
+              closeOnClick: true,
+              draggable: true,
+              draggablePercent: 2,
+              hideProgressBar: true,
+            });
+          }
+          
         })
         .catch((err) => {
-          console.log("Ошибка при отправке данных пользователя" + err)
+          console.log("Ошибка при отправке данных пользователя (регистрация) " + err)
           return err;
         })
       } catch(err){
-        console.log("Ошибка при отправке данных пользователя")
+        console.log("Ошибка при отправке данных пользователя (регистрация)")
         return err;
       }
+    },
+    AUTORISATION({commit}, AutorisationData){
+      try{
+        axios
+        .post(API + 'autorisation.php', AutorisationData)
+        .then((res) => {
+          if (res.data.status == '1'){
+            commit('SET_USER_TO_PROFILE', res.data.id)
+            toast.success("Вход успешен!", {
+              timeout: 3000,
+              closeOnClick: true,
+              draggable: true,
+              draggablePercent: 2,
+              hideProgressBar: true,
+            });
+          } else {
+            toast.error("Профиль был не найден", {
+              timeout: 3000,
+              closeOnClick: true,
+              draggable: true,
+              draggablePercent: 2,
+              hideProgressBar: true,
+            });
+          }
+        })
+        .catch((err) => {
+          console.log("Ошибка при отправке данных пользователя (авторизация)")
+          return err;
+        })
+
+      }catch(err){
+        console.log("Ошибка при отправке данных пользователя (авторизация)")
+        return err;
+      }
+    },
+    LOGOUT({commit}){
+      commit('SET_USER_TO_PROFILE', '')
     }
-    
   },
-  plugins: [vuexLocal.plugin]
+  plugins: [Local.plugin]
 })
