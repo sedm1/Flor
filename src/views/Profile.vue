@@ -7,21 +7,21 @@
                 <div class="container">
                     <div class="info__header-item">
                         <div class="item-title">Контакты</div>
-                        <h3 class="item-descript">{{ this.USER }}</h3>
+                        <h3 class="item-descript">{{ this.USERDATA.phone }}</h3>
                     </div>
                     <div class="info__header-item">
                         <div class="item-title">Адрес доставки</div>
-                        <h3 class="item-descript" v-if="this.USER">{{ this.USER }}, {{ this.USER.street }}, {{ this.USER.home }}</h3>
+                        <h3 class="item-descript" v-if="this.USERDATA.city">{{ this.USER.city }}, {{ this.USER.street }}, {{ this.USER.home }}</h3>
                         <h3 class="item-descript" v-else>Укажите в профиле</h3>
                     </div>
                     <div class="info__header-item">
                         <div class="item-title">Дата рождения</div>
-                        <h3 class="item-descript" v-if="this.USER ">{{ this.USER }}</h3>
+                        <h3 class="item-descript" v-if="this.USERDATA.birthday ">{{ this.USERDATA.birthday }}</h3>
                         <h3 class="item-descript" v-else>Укажите в профиле</h3>
                     </div>
                     <div class="info__header-item">
                         <div class="item-title">Бонусы</div>
-                        <h3 class="item-descript">{{ this.USER }}</h3>
+                        <h3 class="item-descript">{{ this.USERDATA.bonuses }}</h3>
                     </div>
                 </div>
             </section>
@@ -36,7 +36,7 @@
                         </ul>
                     </div>
                     <div class="info__main-block">
-                        <router-view></router-view>
+                        <router-view :UserData="this.USERDATA"></router-view>
                     </div>
                 </div>
             </section>
@@ -51,17 +51,24 @@ export default {
     components: { TheHeader },
     computed: {
         ...mapGetters([
-            'USER'
+            'USER',
+            'USERDATA'
         ])
     },
     methods: {
         ...mapActions([
-            'LOGOUT'
+            'LOGOUT',
+            'GET_USER_DATA'
         ]),
         logout(){
             this.LOGOUT()
             this.$router.push('/')
         }
+    },
+    mounted(){
+        let UserDataId = new FormData()
+        UserDataId.append('UserId', this.USER.HashId)
+        this.GET_USER_DATA(UserDataId)
     }
 }
 </script>
@@ -117,4 +124,42 @@ export default {
         font-size: 14px
         font-weight: 500
         text-transform: uppercase
+.profile
+    &__block
+        border-bottom: 1px solid #DEDEDB
+        padding-bottom: 32px
+        margin-bottom: 32px
+    &__title
+        font-size: 20px
+        font-weight: 600
+        margin-bottom: 30px
+    &__input
+        width: 100%
+        margin-bottom: 20px
+        &-title
+            text-transform: uppercase
+            font-size: 14px
+            font-weight: 600
+            color: $black
+            margin-bottom: 10px
+            span
+                color: $red
+        &-input
+            padding: 16px 15px
+            border: 1px solid #C5C5C5
+            border-radius: 50px
+            font-size: 14px
+            font-weight: 500
+            width: 100%
+            &:read-only
+                background: rgba(47,128,237, 0.05)
+    &__button
+        padding: 16px 24px
+        background: $gray
+        color: $white
+        font-size: 14px
+        font-weight: 600
+        text-transform: uppercase
+        margin-top: 10px
+        border-radius: 50px
 </style>

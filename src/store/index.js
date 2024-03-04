@@ -4,7 +4,7 @@ import VuexPersistence from 'vuex-persist'
 import { useToast } from 'vue-toastification'
 
 
-
+/* eslint-disable */
 const toast = useToast()
 const Local = new VuexPersistence({
   storage: window.localStorage,
@@ -24,6 +24,17 @@ export default createStore({
     Favourites: [],
     User: {
       HashId: '',
+    },
+    LocalUserData: {
+      name: null,
+      lastname: null,
+      email: null,
+      phone: null,
+      birthday: null,
+      city: null,
+      street: null,
+      home: null,
+      bonuses: null
     }
   },
   getters: {
@@ -35,6 +46,9 @@ export default createStore({
     },
     USER(state){
       return state.User
+    },
+    USERDATA(state){
+      return state.LocalUserData
     }
   },
   mutations: {
@@ -61,8 +75,19 @@ export default createStore({
     },
     SET_USER_TO_PROFILE: (state, UserId) => {
       state.User.HashId = UserId
-      
-    }
+    },
+    SET_USER_TO_STATE: (state, UsersData) =>{
+      let UserData = UsersData.data[0]
+      state.LocalUserData.name = UserData['name']
+      state.LocalUserData.lastname = UserData['lastname']
+      state.LocalUserData.email = UserData['email']
+      state.LocalUserData.phone = UserData['phone']
+      state.LocalUserData.birthday = UserData['birthday']
+      state.LocalUserData.city = UserData['city']
+      state.LocalUserData.street = UserData['street']
+      state.LocalUserData.home = UserData['home']
+      state.LocalUserData.bonuses = UserData['bonuses']
+    },
   },
   actions: {
     async GET_ALL_PRODUCTS_FORM_DB({commit}){
@@ -163,6 +188,45 @@ export default createStore({
     },
     LOGOUT({commit}){
       commit('SET_USER_TO_PROFILE', '')
+    },
+    GET_USER_DATA({commit}, HashId){
+      try {
+        axios
+        .post(API + 'userdata.php', HashId)
+        .then((res) => {
+          commit('SET_USER_TO_STATE', res)
+        })
+        .catch((err) => {
+          console.log('Ошибка при получении данных пользователся')
+          return err;
+        })
+      } catch(err){
+        console.log('Ошибка при получении данных пользователся')
+        return err;
+      }
+    },
+    SEND_DATA_TO_BD({commit}, UserData){
+      try {
+        axios
+        .post(API + 'newUserData.php', UserData)
+        .then((res) => {
+          console.log(res)
+          toast.success("Данные успешно обновлены!", {
+            timeout: 3000,
+            closeOnClick: true,
+            draggable: true,
+            draggablePercent: 2,
+            hideProgressBar: true,
+          });
+        })
+        .catch((err) => {
+          console.log("Ошибка при отправке доп. данных пользователя")
+          return err;
+        })
+      } catch(err){
+        console.log("Ошибка при отправке доп. данных пользователя")
+        return err;
+      }
     }
   },
   plugins: [Local.plugin]
